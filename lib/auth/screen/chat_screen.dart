@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'profile_screen.dart';
 
 class ChatScreen extends StatefulWidget {
   ChatScreen({super.key});
@@ -55,7 +56,13 @@ class _ChatScreenState extends State<ChatScreen> {
               leading: const Icon(Icons.person, color: Color(0xFF6A4CFF)),
               title:
                   const Text("Perfil", style: TextStyle(color: Colors.white)),
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => ProfileScreen()),
+                );
+              },
             ),
             ListTile(
               leading: const Icon(Icons.logout, color: Color(0xFF6A4CFF)),
