@@ -11,15 +11,10 @@ class AuthService {
 
   Future<User?> signInWithGoogle() async {
     try {
-      print("LOGIN PRESSED");
-
       final GoogleSignInAccount? googleUser =
           await _googleSignIn.signIn();
 
-      if (googleUser == null) {
-        print("LOGIN CANCELLED");
-        return null;
-      }
+      if (googleUser == null) return null;
 
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
@@ -31,8 +26,6 @@ class AuthService {
 
       final userCredential =
           await _auth.signInWithCredential(credential);
-
-      print("LOGIN OK => ${userCredential.user?.email}");
 
       return userCredential.user;
     } catch (e) {

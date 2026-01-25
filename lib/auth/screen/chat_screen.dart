@@ -13,7 +13,6 @@ class _ChatScreenState extends State<ChatScreen> {
   final _controller = TextEditingController();
   final _firestore = FirebaseFirestore.instance;
   final _auth = FirebaseAuth.instance;
-  final _scrollController = ScrollController();
 
   void _sendMessage() async {
     if (_controller.text.trim().isEmpty) return;
@@ -30,16 +29,6 @@ class _ChatScreenState extends State<ChatScreen> {
     });
 
     _controller.clear();
-
-    Future.delayed(const Duration(milliseconds: 200), () {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          0,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
-    });
   }
 
   @override
@@ -47,44 +36,31 @@ class _ChatScreenState extends State<ChatScreen> {
     final user = _auth.currentUser;
 
     return Scaffold(
+      backgroundColor: const Color(0xFF0B061A),
       drawer: Drawer(
+        backgroundColor: const Color(0xFF0B061A),
         child: Column(
           children: [
             UserAccountsDrawerHeader(
-              accountName: Text(user?.displayName ?? ''),
-              accountEmail: Text(user?.email ?? ''),
+              decoration: const BoxDecoration(color: Color(0xFF2A1E4F)),
+              accountName: Text(user?.displayName ?? '',
+                  style: const TextStyle(color: Colors.white)),
+              accountEmail: Text(user?.email ?? '',
+                  style: const TextStyle(color: Colors.white70)),
               currentAccountPicture: CircleAvatar(
                 backgroundImage: NetworkImage(user?.photoURL ?? ''),
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.person),
-              title: const Text("Perfil"),
-              onTap: () {
-                Navigator.pop(context);
-                showDialog(
-                  context: context,
-                  builder: (_) => AlertDialog(
-                    title: const Text("Perfil"),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircleAvatar(
-                          radius: 35,
-                          backgroundImage: NetworkImage(user?.photoURL ?? ''),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(user?.displayName ?? ''),
-                        Text(user?.email ?? ''),
-                      ],
-                    ),
-                  ),
-                );
-              },
+              leading: const Icon(Icons.person, color: Color(0xFF6A4CFF)),
+              title:
+                  const Text("Perfil", style: TextStyle(color: Colors.white)),
+              onTap: () => Navigator.pop(context),
             ),
             ListTile(
-              leading: const Icon(Icons.logout),
-              title: const Text("Logout"),
+              leading: const Icon(Icons.logout, color: Color(0xFF6A4CFF)),
+              title:
+                  const Text("Logout", style: TextStyle(color: Colors.white)),
               onTap: () async {
                 await FirebaseAuth.instance.signOut();
                 Navigator.pop(context);
@@ -94,7 +70,10 @@ class _ChatScreenState extends State<ChatScreen> {
           ],
         ),
       ),
-      appBar: AppBar(title: const Text("🔥 Flutter Chat")),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF2A1E4F),
+        title: const Text("🌙 Chat Global"),
+      ),
       body: Column(
         children: [
           Expanded(
@@ -104,10 +83,6 @@ class _ChatScreenState extends State<ChatScreen> {
                   .orderBy('createdAt', descending: true)
                   .snapshots(),
               builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  return const Center(child: Text("Error cargando mensajes"));
-                }
-
                 if (!snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
                 }
@@ -115,52 +90,37 @@ class _ChatScreenState extends State<ChatScreen> {
                 final docs = snapshot.data!.docs;
 
                 return ListView.builder(
-                  controller: _scrollController,
                   reverse: true,
                   itemCount: docs.length,
                   itemBuilder: (context, index) {
-                    final data =
-                        docs[index].data() as Map<String, dynamic>;
-
+                    final data = docs[index].data() as Map<String, dynamic>;
                     final isMe = data['uid'] == user!.uid;
-                    final name = data['name'] ?? 'Usuario';
-                    final text = data['text'] ?? '';
 
                     return Align(
-                      alignment: isMe
-                          ? Alignment.centerRight
-                          : Alignment.centerLeft,
+                      alignment:
+                          isMe ? Alignment.centerRight : Alignment.centerLeft,
                       child: Container(
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 6),
+                        margin: const EdgeInsets.all(8),
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: isMe
-                              ? Colors.blueAccent
-                              : Colors.grey.shade300,
+                              ? const Color(0xFF6A4CFF)
+                              : const Color(0xFF2A1E4F),
                           borderRadius: BorderRadius.circular(18),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              name,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: isMe
-                                    ? Colors.white70
-                                    : Colors.black54,
-                              ),
+                              data['name'] ?? '',
+                              style: const TextStyle(
+                                  fontSize: 12, color: Colors.white70),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              text,
-                              style: TextStyle(
-                                color:
-                                    isMe ? Colors.white : Colors.black87,
-                                fontSize: 15,
-                              ),
+                              data['text'] ?? '',
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 15),
                             ),
                           ],
                         ),
@@ -179,17 +139,22 @@ class _ChatScreenState extends State<ChatScreen> {
                   Expanded(
                     child: TextField(
                       controller: _controller,
+                      style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
                         hintText: "Escribe un mensaje...",
+                        hintStyle: const TextStyle(color: Colors.white38),
+                        filled: true,
+                        fillColor: const Color(0xFF2A1E4F),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(25),
+                          borderSide: BorderSide.none,
                         ),
                       ),
-                      onSubmitted: (_) => _sendMessage(),
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.send),
+                    icon: const Icon(Icons.send,
+                        color: Color(0xFF6A4CFF)),
                     onPressed: _sendMessage,
                   ),
                 ],

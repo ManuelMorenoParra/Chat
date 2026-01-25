@@ -21,14 +21,15 @@ class _LoginScreenState extends State<LoginScreen> {
         width: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xff2193b0), Color(0xff6dd5ed)],
+            colors: [Color(0xFF0B061A), Color(0xFF2A1E4F)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
         ),
         child: Center(
           child: Card(
-            elevation: 10,
+            color: const Color(0xFF1B1338),
+            elevation: 12,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
@@ -37,22 +38,28 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.chat, size: 70, color: Colors.blue),
+                  const Icon(Icons.chat,
+                      size: 70, color: Color(0xFF6A4CFF)),
                   const SizedBox(height: 20),
                   const Text(
-                    "Flutter Chat",
+                    "Chat Global",
                     style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 30),
                   loading
-                      ? const CircularProgressIndicator()
+                      ? const CircularProgressIndicator(
+                          color: Color(0xFF6A4CFF),
+                        )
                       : ElevatedButton.icon(
                           icon: const Icon(Icons.login),
                           label: const Text("Entrar con Google"),
                           style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF6A4CFF),
+                            foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 30, vertical: 14),
                             shape: RoundedRectangleBorder(

@@ -9,7 +9,11 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Perfil")),
+      backgroundColor: const Color(0xFF0B061A),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF2A1E4F),
+        title: const Text("Perfil"),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -21,15 +25,22 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 20),
             Text(
               user?.displayName ?? '',
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
             ),
             const SizedBox(height: 10),
-            Text(user?.email ?? ''),
+            Text(user?.email ?? '',
+                style: const TextStyle(color: Colors.white70)),
             const SizedBox(height: 30),
             ListTile(
-              leading: const Icon(Icons.person),
-              title: const Text("UID"),
-              subtitle: Text(user?.uid ?? ''),
+              leading:
+                  const Icon(Icons.person, color: Color(0xFF6A4CFF)),
+              title: const Text("UID",
+                  style: TextStyle(color: Colors.white)),
+              subtitle: Text(user?.uid ?? '',
+                  style: const TextStyle(color: Colors.white70)),
             ),
           ],
         ),
