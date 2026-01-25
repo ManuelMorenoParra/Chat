@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'profile_screen.dart';
 
 class ChatScreen extends StatefulWidget {
   ChatScreen({super.key});
@@ -14,6 +13,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final _controller = TextEditingController();
   final _firestore = FirebaseFirestore.instance;
   final _auth = FirebaseAuth.instance;
+  final _scrollController = ScrollController();
 
   void _sendMessage() async {
     if (_controller.text.trim().isEmpty) return;
@@ -30,6 +30,16 @@ class _ChatScreenState extends State<ChatScreen> {
     });
 
     _controller.clear();
+
+    Future.delayed(const Duration(milliseconds: 200), () {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   @override
@@ -37,43 +47,54 @@ class _ChatScreenState extends State<ChatScreen> {
     final user = _auth.currentUser;
 
     return Scaffold(
-  drawer: Drawer(
-    child: Column(
-      children: [
-        UserAccountsDrawerHeader(
-          accountName: Text(user?.displayName ?? ''),
-          accountEmail: Text(user?.email ?? ''),
-          currentAccountPicture: CircleAvatar(
-            backgroundImage: NetworkImage(user?.photoURL ?? ''),
-          ),
+      drawer: Drawer(
+        child: Column(
+          children: [
+            UserAccountsDrawerHeader(
+              accountName: Text(user?.displayName ?? ''),
+              accountEmail: Text(user?.email ?? ''),
+              currentAccountPicture: CircleAvatar(
+                backgroundImage: NetworkImage(user?.photoURL ?? ''),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: const Text("Perfil"),
+              onTap: () {
+                Navigator.pop(context);
+                showDialog(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    title: const Text("Perfil"),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircleAvatar(
+                          radius: 35,
+                          backgroundImage: NetworkImage(user?.photoURL ?? ''),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(user?.displayName ?? ''),
+                        Text(user?.email ?? ''),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text("Logout"),
+              onTap: () async {
+                await FirebaseAuth.instance.signOut();
+                Navigator.pop(context);
+                Navigator.pop(context);
+              },
+            ),
+          ],
         ),
-        ListTile(
-          leading: const Icon(Icons.person),
-          title: const Text("Ver perfil"),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => ProfileScreen()),
-            );
-          },
-        ),
-        ListTile(
-          leading: const Icon(Icons.logout),
-          title: const Text("Cerrar sesión"),
-          onTap: () async {
-            await FirebaseAuth.instance.signOut();
-            Navigator.pop(context);
-            Navigator.pop(context);
-          },
-        ),
-      ],
-    ),
-  ),
-
-      appBar: AppBar(
-        title: const Text("Chat"),
-        centerTitle: true,
       ),
+      appBar: AppBar(title: const Text("🔥 Flutter Chat")),
       body: Column(
         children: [
           Expanded(
@@ -83,6 +104,10 @@ class _ChatScreenState extends State<ChatScreen> {
                   .orderBy('createdAt', descending: true)
                   .snapshots(),
               builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return const Center(child: Text("Error cargando mensajes"));
+                }
+
                 if (!snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
                 }
@@ -90,61 +115,54 @@ class _ChatScreenState extends State<ChatScreen> {
                 final docs = snapshot.data!.docs;
 
                 return ListView.builder(
+                  controller: _scrollController,
                   reverse: true,
                   itemCount: docs.length,
                   itemBuilder: (context, index) {
-                    final data = docs[index];
-                    final isMe = data['uid'] == user!.uid;
+                    final data =
+                        docs[index].data() as Map<String, dynamic>;
 
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      child: Align(
-                        alignment: isMe
-                            ? Alignment.centerRight
-                            : Alignment.centerLeft,
-                        child: Container(
-                          constraints: BoxConstraints(
-                              maxWidth:
-                                  MediaQuery.of(context).size.width * 0.75),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: isMe
-                                ? Colors.blueAccent
-                                : Colors.grey.shade300,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  if (!isMe)
-                                    CircleAvatar(
-                                      radius: 12,
-                                      backgroundImage:
-                                          NetworkImage(data['photo'] ?? ''),
-                                    ),
-                                  if (!isMe) const SizedBox(width: 6),
-                                  Text(
-                                    data['name'],
-                                    style: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ],
+                    final isMe = data['uid'] == user!.uid;
+                    final name = data['name'] ?? 'Usuario';
+                    final text = data['text'] ?? '';
+
+                    return Align(
+                      alignment: isMe
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: isMe
+                              ? Colors.blueAccent
+                              : Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              name,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: isMe
+                                    ? Colors.white70
+                                    : Colors.black54,
                               ),
-                              const SizedBox(height: 6),
-                              Text(
-                                data['text'],
-                                style: TextStyle(
-                                  color:
-                                      isMe ? Colors.white : Colors.black87,
-                                  fontSize: 15,
-                                ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              text,
+                              style: TextStyle(
+                                color:
+                                    isMe ? Colors.white : Colors.black87,
+                                fontSize: 15,
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
                     );
@@ -164,17 +182,15 @@ class _ChatScreenState extends State<ChatScreen> {
                       decoration: InputDecoration(
                         hintText: "Escribe un mensaje...",
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30),
+                          borderRadius: BorderRadius.circular(25),
                         ),
                       ),
+                      onSubmitted: (_) => _sendMessage(),
                     ),
                   ),
-                  const SizedBox(width: 6),
-                  CircleAvatar(
-                    child: IconButton(
-                      icon: const Icon(Icons.send),
-                      onPressed: _sendMessage,
-                    ),
+                  IconButton(
+                    icon: const Icon(Icons.send),
+                    onPressed: _sendMessage,
                   ),
                 ],
               ),
