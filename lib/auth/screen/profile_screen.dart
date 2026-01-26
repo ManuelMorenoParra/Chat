@@ -74,20 +74,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            // AVATAR SOLO MOSTRAR
-            CircleAvatar(
-              radius: 60,
-              backgroundColor: const Color(0xFF6A4CFF),
-              backgroundImage: user?.photoURL != null
-                  ? NetworkImage(user!.photoURL!)
-                  : null,
-              child: user?.photoURL == null
-                  ? const Icon(Icons.person,
-                      size: 60, color: Colors.white)
-                  : null,
-            ),
-
-            const SizedBox(height: 30),
 
             // NOMBRE
             TextField(
